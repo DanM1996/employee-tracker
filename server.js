@@ -1,6 +1,8 @@
+const { prompt } = require('inquirer');
 const inquirer = require('inquirer');
 const db = require('./db/connection');
 const Fnc = require('./lib/functions');
+const cTable = require('console.table');
 
 const loadPrompts = () => {
     return inquirer.prompt([
@@ -54,7 +56,7 @@ const loadPrompts = () => {
                     vEmployees()
                     break;
                 case 3:
-                    addDepartment()
+                    aDepartment()
                     break;
                 case 4:
                     addRole()
@@ -86,32 +88,45 @@ const vDepartment = () => {
 
 };
 const vRoles = () => {
-    // the [rows] is everything that comes from viewDepartment
     Fnc.viewRoles().then(([rows]) => {
         let roles = rows;
         console.table(roles)
     })
         .then(() => loadPrompts())
-
-    // creating new array that maps the array to an object
-    // const departnemtRows = department.map(({ id, name }) => {
-    //     ({ name: name, value: id});
-    // });
-
 };
 const vEmployees = () => {
-    // the [rows] is everything that comes from viewDepartment
     Fnc.viewEmployees().then(([rows]) => {
         let employees = rows;
         console.table(employees)
     })
         .then(() => loadPrompts())
 
-    // creating new array that maps the array to an object
-    // const departnemtRows = department.map(({ id, name }) => {
-    //     ({ name: name, value: id});
-    // });
-
 };
 
+const aDepartment = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'newDepartment',
+            message: 'Please provide the name of the new department.',
+            validate: newDepartment => {
+                if (newDepartment) {
+                    return true;
+                }
+                else {
+                    console.log('Please provide a new department.');
+                }
+            }
+        }])
+        .then(addedDepartment => {
+            // turns the newly input text into a variable and confirmed in console log
+            let { newDepartment } = addedDepartment;
+            console.log(newDepartment)
+        })
+        .then(() => Fnc.addDepartment)
+        // const newDepartment = department.map(({ id, name }) => {
+        //     ({ name: name, value: id});
+        // })
+        .then(() => loadPrompts())
+}
 loadPrompts();
