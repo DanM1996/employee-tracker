@@ -38,6 +38,10 @@ const loadPrompts = () => {
                 {
                     name: 'Update an Employee',
                     value: 6
+                },
+                {
+                    name: 'Quit',
+                    value: 'default'
                 }
 
             ]
@@ -59,10 +63,10 @@ const loadPrompts = () => {
                     aDepartment()
                     break;
                 case 4:
-                    addRole()
+                    aRole()
                     break;
                 case 5:
-                    addEmployee()
+                    aEmployee()
                     break;
                 case 6:
                     updateEmployee()
@@ -73,6 +77,7 @@ const loadPrompts = () => {
             }
         })
 }
+loadPrompts();
 const vDepartment = () => {
     // the [rows] is everything that comes from viewDepartment
     Fnc.viewDepartment().then(([rows]) => {
@@ -108,25 +113,82 @@ const aDepartment = () => {
         {
             type: 'input',
             name: 'newDepartment',
-            message: 'Please provide the name of the new department.',
-            validate: newDepartment => {
-                if (newDepartment) {
-                    return true;
-                }
-                else {
-                    console.log('Please provide a new department.');
-                }
-            }
+            message: 'Please provide the name of the new department.'
         }])
-        .then(addedDepartment => {
-            // turns the newly input text into a variable and confirmed in console log
-            let { newDepartment } = addedDepartment;
-            console.log({ newDepartment })
-        })
-        .then(() => Fnc.addDepartment())
-        // const newDepartment = department.map(({ id, name }) => {
-        //     ({ name: name, value: id});
-        // })
-        .then(() => loadPrompts())
+        .then(function (response) {
+            console.log(response.newDepartment);
+            const params = [response.newDepartment]
+            db.query(`INSERT INTO department (name) VALUES (?)`, params, (err, response) => {
+                if (err) {
+                    res.status(400);
+                }
+            }),
+            loadPrompts();
+        });
+
 }
-loadPrompts();
+
+const aRole = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'newRole',
+            message: 'Please provide the name of the new Role.'
+        },
+        {
+            type: 'number',
+            name: 'newSalary',
+            message: 'Enter the salary for the new position, no commas.'
+        },
+        {
+            type: 'number',
+            name: 'newDepartmentID',
+            message: 'Enter a department ID.'
+        }
+    ])
+        .then(function  (response) {
+            const params = [response.newRole, response.newSalary, response.newDepartmentID]
+            db.query(`INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`, params, (err, response) => {
+                if (err) {
+                    res.status(400);
+                }
+            }),
+            loadPrompts();
+        });
+
+}
+
+const aEmployee = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'newFirstName',
+            message: 'What is the first name of the new employee?'
+        },
+        {
+            type: 'input',
+            name: 'newLastName',
+            message: 'What is the last name of the new employee?'
+        },
+        {
+            type: 'number',
+            name: 'newRoleId',
+            message: "What is the new employee's role?"
+        },
+        {
+            type: 'number',
+            name: 'newManagerId',
+            message: "Who is the new Employee's manager?"
+        },
+    ])
+        .then(function (response) {
+            const params = [response.newFirstName, response.newLastName, response.newRoleId, response.newManagerId]
+            db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`, params, (err, response) => {
+                if (err) {
+                    res.status(400);
+                }
+            }),
+            loadPrompts();
+        });
+
+}
