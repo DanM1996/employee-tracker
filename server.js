@@ -121,9 +121,9 @@ const aDepartment = () => {
         .then(addedDepartment => {
             // turns the newly input text into a variable and confirmed in console log
             let { newDepartment } = addedDepartment;
-            console.log(newDepartment)
+            console.log({ newDepartment })
         })
-        .then(() => Fnc.addDepartment)
+        .then(() => Fnc.addDepartment())
         // const newDepartment = department.map(({ id, name }) => {
         //     ({ name: name, value: id});
         // })
