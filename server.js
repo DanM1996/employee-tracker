@@ -69,7 +69,7 @@ const loadPrompts = () => {
                     aEmployee()
                     break;
                 case 6:
-                    updateEmployee()
+                    uEmployee()
                     break;
                 // quit function goes here (if there is one)
                 default:
@@ -191,4 +191,38 @@ const aEmployee = () => {
             loadPrompts();
         });
 
+}
+
+const uEmployee = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'updatedFirstName',
+            message: "What is the employee's updated first name? (if applicable)"
+        },
+        {
+            type: 'input',
+            name: 'updatedLastName',
+            message: "What is the employee's updated last name? (if applicable)"
+        },
+        {
+            type: 'number',
+            name: 'updatedRoleId',
+            message: "What is the employee's updated role? (if applicable)"
+        },
+        {
+            type: 'number',
+            name: 'updatedManagerId',
+            message: "Who is the Employee's new manager? (if applicable)"
+        },
+    ])
+        .then(function (response) {
+            const params = [response.updatedFirstName, response.updatedLastName, response.updatedRoleId, response.updatedManagerId]
+            db.query(`UPDATE employee SET first_name = ?, last_name = ?, role_id = ?, manager_id = ? WHERE id = ?)`, params, (err, response) => {
+                if (err) {
+                    res.status(400);
+                }
+            }),
+            loadPrompts();
+        });
 }
