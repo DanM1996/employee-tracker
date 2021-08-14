@@ -36,7 +36,7 @@ const loadPrompts = () => {
                     value: 5
                 },
                 {
-                    name: 'Update an Employee',
+                    name: "Update an Employee's Role",
                     value: 6
                 },
                 {
@@ -78,20 +78,19 @@ const loadPrompts = () => {
         })
 }
 loadPrompts();
-const vDepartment = () => {
+
+async function vDepartment()  {
     // the [rows] is everything that comes from viewDepartment
-    Fnc.viewDepartment().then(([rows]) => {
+    await Fnc.viewDepartment().then(([rows]) => {
         let department = rows;
         console.table(department)
     })
         .then(() => loadPrompts())
 
-    // creating new array that maps the array to an object
-    // const departnemtRows = department.map(({ id, name }) => {
-    //     ({ name: name, value: id});
-    // });
+
 
 };
+
 const vRoles = () => {
     Fnc.viewRoles().then(([rows]) => {
         let roles = rows;
@@ -99,6 +98,7 @@ const vRoles = () => {
     })
         .then(() => loadPrompts())
 };
+
 const vEmployees = () => {
     Fnc.viewEmployees().then(([rows]) => {
         let employees = rows;
@@ -123,7 +123,7 @@ const aDepartment = () => {
                     res.status(400);
                 }
             }),
-            loadPrompts();
+                loadPrompts();
         });
 
 }
@@ -146,14 +146,14 @@ const aRole = () => {
             message: 'Enter a department ID.'
         }
     ])
-        .then(function  (response) {
+        .then(function (response) {
             const params = [response.newRole, response.newSalary, response.newDepartmentID]
             db.query(`INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`, params, (err, response) => {
                 if (err) {
                     res.status(400);
                 }
             }),
-            loadPrompts();
+                loadPrompts();
         });
 
 }
@@ -188,27 +188,51 @@ const aEmployee = () => {
                     res.status(400);
                 }
             }),
-            loadPrompts();
+                loadPrompts();
         });
 
 }
 
-const uEmployee = () => {
-    inquirer.prompt([
+async function uEmployee () {
+    const employeeArray = await Fnc.viewEmployees().then(([rows]));
+    // console.log(employeeArray)
+    // console.log(employeeArray.TextRow.id)
+    
+    let table = rows;
+    console.log(table)
+    // const vEmployees = () => {
+    //     Fnc.viewEmployees().then(([rows]) => {
+    //         let employees = rows;
+    //         console.table(employees)
+    //     })
+    //         .then(() => loadPrompts())
+    
+    // };
+
+    const rolesArray =  await Fnc.viewRoles();
+
+    const chooseEmployee = employeeArray.map(({ id, first_name, last_name }) =>
+        ({ name: first_name + last_name, value: id }));
+        // console.log(chooseEmployee)
+
+    const chooseRole = rolesArray.map(({ id, title }) =>
+        ({ name: title, value: id }));
+    
+    const { employeeChoice } = inquirer.prompt([
         {
-            type: 'input',
-            name: 'updatedFirstName',
-            message: "What is the employee's updated first name? (if applicable)"
-        },
+            type: 'list',
+            name: 'employeeID',
+            message: 'Which employee would you like to update?',
+            choices: chooseEmployee
+        }
+    ])
+
+    const { roleChoice } = inquirer.prompt([
         {
-            type: 'input',
-            name: 'updatedLastName',
-            message: "What is the employee's updated last name? (if applicable)"
-        },
-        {
-            type: 'number',
-            name: 'updatedRoleId',
-            message: "What is the employee's updated role? (if applicable)"
+            type: 'list',
+            name: 'roleID',
+            message: "What is the employee's new role?",
+            choices: chooseRole
         },
         {
             type: 'number',
@@ -216,13 +240,6 @@ const uEmployee = () => {
             message: "Who is the Employee's new manager? (if applicable)"
         },
     ])
-        .then(function (response) {
-            const params = [response.updatedFirstName, response.updatedLastName, response.updatedRoleId, response.updatedManagerId]
-            db.query(`UPDATE employee SET first_name = ?, last_name = ?, role_id = ?, manager_id = ? WHERE id = ?)`, params, (err, response) => {
-                if (err) {
-                    res.status(400);
-                }
-            }),
-            loadPrompts();
-        });
+    .then(Fnc.updateEmployee())
+    .then(() => loadPrompts())
 }
