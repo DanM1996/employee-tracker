@@ -73,9 +73,6 @@ const loadPrompts = () => {
                 case 6:
                     uEmployee()
                     break;
-                // quit function goes here (if there is one)
-                default:
-                    return;
             }
         })
 }
@@ -89,8 +86,6 @@ async function vDepartment()  {
         console.table(department)
     })
         .then(() => loadPrompts())
-
-
 
 };
 
