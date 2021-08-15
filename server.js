@@ -1,9 +1,11 @@
+// Declaring variables that tie to app functionality
 const { prompt } = require('inquirer');
 const inquirer = require('inquirer');
 const db = require('./db/connection');
 const Fnc = require('./lib/functions');
 const cTable = require('console.table');
 
+// This function loads the entire menu where you have 7 choices on what you'd like to do
 const loadPrompts = () => {
     return inquirer.prompt([
         {
@@ -79,6 +81,7 @@ const loadPrompts = () => {
 }
 loadPrompts();
 
+// Calling the viewDepartment function from another file and adding it here, then executing the vDepartment function to view all departments
 async function vDepartment()  {
     // the [rows] is everything that comes from viewDepartment
     await Fnc.viewDepartment().then(([rows]) => {
@@ -91,6 +94,7 @@ async function vDepartment()  {
 
 };
 
+// Same thing as the department function, but with the roles tables
 const vRoles = () => {
     Fnc.viewRoles().then(([rows]) => {
         let roles = rows;
@@ -99,6 +103,7 @@ const vRoles = () => {
         .then(() => loadPrompts())
 };
 
+// Same thing as the previous two functions, but deals with the list of Employees
 const vEmployees = () => {
     Fnc.viewEmployees().then(([rows]) => {
         let employees = rows;
@@ -108,6 +113,8 @@ const vEmployees = () => {
 
 };
 
+
+// Function that adds new departments to the department table
 const aDepartment = () => {
     inquirer.prompt([
         {
@@ -115,6 +122,7 @@ const aDepartment = () => {
             name: 'newDepartment',
             message: 'Please provide the name of the new department.'
         }])
+        // After the prompt, takes user response and plugs it into an SQL string that inserts the new data into the department table
         .then(function (response) {
             console.log(response.newDepartment);
             const params = [response.newDepartment]
@@ -123,11 +131,13 @@ const aDepartment = () => {
                     res.status(400);
                 }
             }),
+            // Executing main function afterwards to reload selection screen
                 loadPrompts();
         });
 
 }
 
+// Exact same thing as the department function, but specifically with roles. There are more functions here and different data types.
 const aRole = () => {
     inquirer.prompt([
         {
@@ -158,6 +168,7 @@ const aRole = () => {
 
 }
 
+// Near identical to adding a Role
 const aEmployee = () => {
     inquirer.prompt([
         {
@@ -193,15 +204,18 @@ const aEmployee = () => {
 
 }
 
-// 
+// Function that allows you to select an employee from the list of available employees and then change their new role to one of the roles available in the table
 const uEmployee = () => {
+    // Declaring local variables
     let employee;
     let role;
 
+    // Running a querey that selects all employees from the employee table
     db.query('SELECT * FROM employee', (err, results) => {
         if (err) {
             throw (err)
         }
+        // Maps the employee table (defined as results) so that it doesn't affect the existing database and returns 2 values: name as the first and last name, value as the id
         const chooseEmployee = results.map(employee => {
             return {
                 name: `${employee.first_name} ${employee.last_name}`,
@@ -210,6 +224,7 @@ const uEmployee = () => {
         });
         console.log(chooseEmployee)
         inquirer
+        // Executes the prompt to select an employee, created as a choices list which is the variable form of the mapped array
         .prompt([
             {
                 name: 'employeeUpdated',
@@ -218,13 +233,18 @@ const uEmployee = () => {
                 choices: chooseEmployee
             }
         ])
+        // Takes the employee selected and stores it as the parameter data
         .then((data) => {
+            // Declaring employee to equal the id of the employee selected
             employee = data.employeeUpdated;
             console.log(employee);
+
+            // Querying the role list, similar to what happened with employees above
             db.query('SELECT * FROM role', (err, results) => {
                 if (err) {
                     throw(err)
                 }
+                // A repeat of the mapped array with employees, just with a different data table now
                 const chooseRole = results.map(role => {
                     return {
                         name: `${role.title}`,
@@ -232,6 +252,7 @@ const uEmployee = () => {
                     };
                 });
 
+                // Runs a prompt that lists out choices taken from the mapped array
                 inquirer
                 .prompt([
                     {
@@ -241,13 +262,17 @@ const uEmployee = () => {
                         choices: chooseRole
                     }
                 ])
+                // Takes the id of the selected role and plugs it into the data parameter
                 .then((data) => {
                     role = data.roleUpdated;
                     console.log(role);
+
+                    // Executes the update querey by tagging the selected role (by it's ID) to the selected employee (by its ID) and overwrites the previous role
                     db.query('UPDATE employee SET ? WHERE ?', [{role_id: role}, {id: employee}], (err, res) => {
                         if (err) {
                             throw err
                         }
+                        // Runs the selection list home screen prompt after executing
                         loadPrompts();
                     })
                 })

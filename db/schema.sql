@@ -1,3 +1,5 @@
+-- After setting up the database, run this to create all the tables and their properties
+
 DROP TABLE IF EXISTS department;
 DROP TABLE IF EXISTS role;
 DROP TABLE IF EXISTS employee

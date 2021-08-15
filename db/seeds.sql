@@ -1,3 +1,5 @@
+-- Once you create the tables, populate it with the seeds data located here
+
 INSERT INTO department (name) 
 VALUES
 ('Sales'),
