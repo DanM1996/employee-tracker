@@ -193,53 +193,65 @@ const aEmployee = () => {
 
 }
 
-async function uEmployee () {
-    const employeeArray = await Fnc.viewEmployees().then(([rows]));
-    // console.log(employeeArray)
-    // console.log(employeeArray.TextRow.id)
-    
-    let table = rows;
-    console.log(table)
-    // const vEmployees = () => {
-    //     Fnc.viewEmployees().then(([rows]) => {
-    //         let employees = rows;
-    //         console.table(employees)
-    //     })
-    //         .then(() => loadPrompts())
-    
-    // };
+// 
+const uEmployee = () => {
+    let employee;
+    let role;
 
-    const rolesArray =  await Fnc.viewRoles();
-
-    const chooseEmployee = employeeArray.map(({ id, first_name, last_name }) =>
-        ({ name: first_name + last_name, value: id }));
-        // console.log(chooseEmployee)
-
-    const chooseRole = rolesArray.map(({ id, title }) =>
-        ({ name: title, value: id }));
-    
-    const { employeeChoice } = inquirer.prompt([
-        {
-            type: 'list',
-            name: 'employeeID',
-            message: 'Which employee would you like to update?',
-            choices: chooseEmployee
+    db.query('SELECT * FROM employee', (err, results) => {
+        if (err) {
+            throw (err)
         }
-    ])
+        const chooseEmployee = results.map(employee => {
+            return {
+                name: `${employee.first_name} ${employee.last_name}`,
+                value: employee.id
+            };
+        });
+        console.log(chooseEmployee)
+        inquirer
+        .prompt([
+            {
+                name: 'employeeUpdated',
+                type: 'list',
+                message: 'Select employee to update',
+                choices: chooseEmployee
+            }
+        ])
+        .then((data) => {
+            employee = data.employee;
+            db.query('Select * FROM role', (err, results) => {
+                if (err) {
+                    throw(err)
+                }
+                const chooseRole = results.map(role => {
+                    return {
+                        name: `${role.title}`,
+                        value: `${role.id}`
+                    };
+                });
 
-    const { roleChoice } = inquirer.prompt([
-        {
-            type: 'list',
-            name: 'roleID',
-            message: "What is the employee's new role?",
-            choices: chooseRole
-        },
-        {
-            type: 'number',
-            name: 'updatedManagerId',
-            message: "Who is the Employee's new manager? (if applicable)"
-        },
-    ])
-    .then(Fnc.updateEmployee())
-    .then(() => loadPrompts())
+                inquirer
+                .prompt([
+                    {
+                        name: 'roleUpdated',
+                        tyoe: 'list',
+                        message: 'Select a new role for the employee',
+                        choices: chooseRole
+                    }
+                ])
+                .then((data) => {
+                    role = data.role;
+                    db.query('UPDATE employee SET ? WHERE ?', [{role_id: role}, {id: employee}], (err, res) => {
+                        if (err) {
+                            throw err
+                        }
+                        console.log(res);
+                        console.log(`${res.affectedRows} Employee successfully updated!`);
+                        loadPrompts();
+                    })
+                })
+            })
+        })
+    })
 }
