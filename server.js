@@ -219,8 +219,9 @@ const uEmployee = () => {
             }
         ])
         .then((data) => {
-            employee = data.employee;
-            db.query('Select * FROM role', (err, results) => {
+            employee = data.chooseEmployee.name;
+            console.log(employee);
+            db.query('SELECT * FROM role', (err, results) => {
                 if (err) {
                     throw(err)
                 }
@@ -235,19 +236,18 @@ const uEmployee = () => {
                 .prompt([
                     {
                         name: 'roleUpdated',
-                        tyoe: 'list',
+                        type: 'list',
                         message: 'Select a new role for the employee',
                         choices: chooseRole
                     }
                 ])
                 .then((data) => {
                     role = data.role;
+                    console.log(role);
                     db.query('UPDATE employee SET ? WHERE ?', [{role_id: role}, {id: employee}], (err, res) => {
                         if (err) {
                             throw err
                         }
-                        console.log(res);
-                        console.log(`${res.affectedRows} Employee successfully updated!`);
                         loadPrompts();
                     })
                 })
