@@ -184,7 +184,7 @@ const aEmployee = () => {
         {
             type: 'number',
             name: 'newRoleId',
-            message: "What is the new employee's role?"
+            message: "What is the new employee's role? (Use the ID number)"
         },
         {
             type: 'number',
