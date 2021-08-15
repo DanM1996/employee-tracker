@@ -219,7 +219,7 @@ const uEmployee = () => {
             }
         ])
         .then((data) => {
-            employee = data.chooseEmployee.name;
+            employee = data.employeeUpdated;
             console.log(employee);
             db.query('SELECT * FROM role', (err, results) => {
                 if (err) {
@@ -242,7 +242,7 @@ const uEmployee = () => {
                     }
                 ])
                 .then((data) => {
-                    role = data.role;
+                    role = data.roleUpdated;
                     console.log(role);
                     db.query('UPDATE employee SET ? WHERE ?', [{role_id: role}, {id: employee}], (err, res) => {
                         if (err) {
